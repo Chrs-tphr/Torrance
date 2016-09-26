@@ -3652,6 +3652,19 @@ function explore(obj){
 }
 
 /*--Start functions for SR notifications--*/
+function addParameter(pamaremeters, key, value)
+{
+  if(key != null)
+  {
+    if(value == null)
+    {
+      value = "";
+    }
+    
+    pamaremeters.put(key, value);
+  }
+}
+
 function sendNotification(emailFrom,emailTo,emailCC,templateName,params,reportFile){
     var itemCap = capId;
     if (arguments.length == 7) itemCap = arguments[6]; // use cap ID specified in args
