@@ -1,15 +1,18 @@
 /*------------------------------------------------------------------------------------------------------/
-| Program : INCLUDES_CUSTOM.js
-| Event   : N/A
-| Agency  : Torrance
-| Version : 08.30.2016.11:39.pst
+| Program	: INCLUDES_CUSTOM.js
+| Event		: N/A
+| Agency	: Torrance
+| Version	: 11.10.2016.13:11.pst
 |
-| Usage   : Custom Script Include.  Insert custom EMSE Function below and they will be available to all master scripts
+| Usage		: Custom Script Include.  Insert custom EMSE Function below and they will be available to all master scripts
 |
-| Notes   : createRefLicProf - override to default the state if one is not provided
+| Notes		: createRefLicProf - override to default the state if one is not provided
 |
-|         : createRefContactsFromCapContactsAndLink - testing new ability to link public users to new ref contacts
-| 20151112 added info to logdebug statement for tracing renewal fees
+|			: createRefContactsFromCapContactsAndLink - testing new ability to link public users to new ref contacts
+|			: 20151112 added info to logdebug statement for tracing renewal fees
+|			: 10/27/2016 - Added functions(getAssignedStaff,assignCapToStaff) and updated(assignCapToDept,assignStaffDeptToCAP)
+|			: 11/10/2016 - Deployed assign dept and staff updates to Dev for testing
+|
 /------------------------------------------------------------------------------------------------------*/
 
 function createRefLicProf(rlpId, rlpType, pContactType) {
@@ -1851,7 +1854,7 @@ function closeSubTasks(ltcapidstr){
             var deactivatedFinalTask = false;
             for (j in wfObj) {
                 revTask = wfObj[j];
-                if (!deactivatedFinalTask && revTask.getTaskDescription().equals(review) && !revTask.getDisposition().equals("Conditions Required")) {
+                if (!deactivatedFinalTask && revTask.getTaskDescription().equals(review) && !revTask.getDisposition().equals("Conditions Required") && !revTask.getDisposition().equals("Approved with Conditions")) {
                     aa.workflow.adjustTask(ltCapId, currTask.getStepNumber(), currTask.getProcessID(), "N", "N", null, null);
                     deactivatedFinalTask = true;
                 }
@@ -2891,10 +2894,12 @@ function addConditionalAssessmentsForPlaygrounds(){
 				assetCAModel.setAssetGroup(playgroundAssetMaster.getG1AssetGroup());
 				// assetCAModel.setClassType(playgroundAssetMaster.getG1ClassType());
 				// assetCAModel.setComments("Automatically created by system.");
-				assetCAModel.setScheduledDate(nowDate);
-				// assetCAModel.setScheduledTime(nowTime);
-				// assetCAModel.setStatus("Scheduled");
-				var systemUserObj = aa.person.getUser("ADMIN");
+				assetCAModel.setScheduledDate(nowDate);// check for required info
+				assetCAModel.setScheduledTime(nowTime);// check for required info
+				assetCAModel.setStatus("Scheduled");
+				
+				var capAssigedUserId = getAssignedStaff();//get workorder assigned to staff and pass userid in below
+				var systemUserObj = aa.person.getUser(capAssigedUserId);
 				if (systemUserObj.getSuccess())
 				{
 					assetCAModel.setInspector(systemUserObj.getOutput());
@@ -3394,19 +3399,29 @@ function assignStaffDeptToCAP(){
 	try{
 		requestCategory = getAppSpecific("Request Category");
 		if (appMatch("ServiceRequest/Animal Control/NA/NA")){
-			assignCap("ANIMALCONTROL");
+//			assignCapToStaff("ANIMALCONTROL");
+			assignCapToStaff("TRAFFICPD");
 		} else if (appMatch("ServiceRequest/Business Assistance/NA/NA")){
 			if ("" + requestCategory != "Business License Info")
-				assignCap("ECODEVO");
+				assignCapToStaff("ECODEVO");
 			else assignCapToDept("Licensing", capId);
 		} else if (appMatch("ServiceRequest/Business Sign Issues/NA/NA")){
 			gisLayerName = "Environmental Inspection Areas";
 		} else if (appMatch("ServiceRequest/Construction Issue/NA/NA")){
 			gisLayerName = "Building Inspection Areas - Residential";
 		} else if (appMatch("ServiceRequest/Fire Hazard (non emergency)/NA/NA")){
-			assignCapToDept("Fire Support Staff", capId);
+//			assignCapToDept("Fire Support Staff", capId);
+			if (requestCategory == "NPDES-On Property")
+				assignCapToDept("Environmental Office", capId);
+			else if (requestCategory == "NPDES-Public Right-of-Way")
+			        gisLayerName = "Fire Inspection Areas";
+			else if (requestCategory == "FireHaz-Fire Prevention")
+				gisLayerName = "Fire Inspection Areas";
+			else if (requestCategory == "FireHaz-Environmental")
+				assignCapToDept("Environmental Office", capId);
+			else assignCapToDept("Fire Support Staff", capId);
 		} else if (appMatch("ServiceRequest/Handicap Accommodation Service/NA/NA")){
-			assignCap("RISKMGT");
+			assignCapToStaff("RISKMGT");
 		} else if (appMatch("ServiceRequest/Internal Communications/NA/NA")){
 			if (requestCategory == "Network")
 				assignCapToDept("Data Communications", capId);
@@ -3414,13 +3429,14 @@ function assignStaffDeptToCAP(){
 				assignCapToDept("Telecommunications", capId);
 			else if (requestCategory == "Cell Phone/Radio")
 				assignCapToDept("Wireless Communications", capId);
-			else assignCap("CITADMIN");
+			else assignCapToStaff("CITADMIN");
 		} else if (appMatch("ServiceRequest/Medians/NA/NA")){
 			gisLayerName = "Streetscape Assignment Areas";
 		} else if (appMatch("ServiceRequest/Noise/NA/NA")){
-			if ("" + requestCategory == "Animal")
-				assignCap("ANIMALCONTROL");
-			else gisLayerName = "Environmental Inspection Areas";
+			if ("" + requestCategory == "Police Issue")
+				assignCapToStaff("COMMUNITYAFFAIRS");
+//			else gisLayerName = "Environmental Inspection Areas";
+                        else assignCapToDept("Environmental Office", capId);
 		} else if (appMatch("ServiceRequest/Park Condition/NA/NA") || appMatch("AMS/Parks/*/*")){
 			gisLayerName = "Park Assignment Areas";
 			// check that GIS objects are attached
@@ -3448,58 +3464,73 @@ function assignStaffDeptToCAP(){
 			}
 		} else if (appMatch("ServiceRequest/Parking OR Vehicle Issue/NA/NA")){
 			if (!requestCategory || "" + requestCategory == "On Property")
-				gisLayerName = "Environmental Inspection Areas";
+//				gisLayerName = "Environmental Inspection Areas";
+                                assignCapToDept("Environmental Office", capId);
 			else if (requestCategory == "In Street (non-emergency)")
-				assignCap("COMMUNITYAFFAIRS");
+				assignCapToStaff("TRAFFICPD");
 			else if (requestCategory == "Painted Curb Request")
-				assignCap("TRAFFICENG");
+				assignCapToStaff("TRAFFICENG");
 		} else if (appMatch("ServiceRequest/Police Question(non emergency)/NA/NA")){
-			assignCap("COMMUNITYAFFAIRS");
+			assignCapToStaff("COMMUNITYAFFAIRS");
 		} else if (appMatch("ServiceRequest/Property Maintenance/NA/NA")){
-			gisLayerName = "Environmental Inspection Areas";
+//			gisLayerName = "Environmental Inspection Areas";
+                        assignCapToDept("Environmental Office", capId);
 		} else if (appMatch("ServiceRequest/Fire Community Outreach Request/NA/NA")){
 			assignCapToDept("Fire Support Staff", capId);
 		} else if (appMatch("ServiceRequest/Recreation Programs/NA/NA")){
-			assignCap("RECREATION");
+                         assignCapToStaff("AORPE");
+// Changed by TY			assignCapToStaff("RECREATION");
 		} else if (appMatch("ServiceRequest/Recycling/NA/NA")){
 			if (!requestCategory || requestCategory == "Request Container")
 				assignCapToDept("Public Works", capId);
 			else if (requestCategory == "Missed Pickup")
 				assignCapToDept("Sewer-Storm Drains", capId);
-			else assignCap("RECYCLING");
+			else assignCapToStaff("RECYCLING");
 		} else if (appMatch("ServiceRequest/Refuse OR Trash Pickup/NA/NA")){
 			assignCapToDept("Public Works", capId);
 		} else if (appMatch("ServiceRequest/Sewer/NA/NA")){
-			assignCapToDept("Sewer-Storm Drains", capId);
+			assignCapToStaff("MWOOLSEY");
+			//Changed by TY on 10-13-2016 assignCapToDept("Sewer-Storm Drains", capId);
 		} else if (appMatch("ServiceRequest/Sidewalk Curb Gutter/NA/NA")){
 			if (!requestCategory)
 				assignCapToDept("Public Works", capId);
 			else if (requestCategory == "Ramping/Grinding")
-				assignCap("RAMPGRIND");
-			else assignCap("CONCRETECREW");
+				assignCapToStaff("RAMPGRIND");
+			else assignCapToStaff("CONCRETECREW");
 		} else if (appMatch("ServiceRequest/Spills Discharge(nonemergency)/NA/NA")){
-			assignCapToDept("Fire Support Staff", capId);
+//			assignCapToDept("Fire Support Staff", capId);
+			if (requestCategory == "NPDES-On Property")
+				assignCapToDept("Environmental Office", capId);
+			else if (requestCategory == "NPDES-Public Right-of-Way")
+				gisLayerName = "Fire Inspection Areas";
+			else if (requestCategory == "FireHaz-Fire Prevention")
+				gisLayerName = "Fire Inspection Areas";
+			else if (requestCategory == "FireHaz-Environmental")
+				assignCapToDept("Environmental Office", capId);
+			else assignCapToDept("Fire Support Staff", capId);
 		} else if (appMatch("ServiceRequest/Standing Water/NA/NA")){
-			assignCapToDept("Sewer-Storm Drains", capId);
+//			assignCapToDept("Sewer-Storm Drains", capId);
+                        assignCapToStaff("CONCRETECREW");
 		} else if (appMatch("ServiceRequest/Street Repair/NA/NA")){
 			if (!requestCategory)
 				assignCapToDept("Street Maintenance", capId);
 			else if (requestCategory == "Pothole" || requestCategory == "Other Damage")
-				assignCap("STREETMAINT");
+				assignCapToStaff("STREETMAINT");
 			else if (requestCategory == "Slurry Request")
-				assignCapToDept("PW Engineering", capId);
+				assignCapToStaff("RAMPGRIND");
+				//Change made by TY - assignCapToDept("PW Engineering", capId);
 			else if (requestCategory == "Striping/Markings")
 				assignCapToDept("Traffic Signs and Signals", capId);
 		} else if (appMatch("ServiceRequest/Street Tree/NA/NA")){
 			gisLayerName = "Streetscape Assignment Areas";
 		} else if (appMatch("ServiceRequest/Traffic Congestion/NA/NA")){
-			assignCap("TRAFFICENG");
+			assignCapToStaff("TRAFFICENG");
 		} else if (appMatch("ServiceRequest/Traffic Signs Signals/NA/NA")){
 			if (!requestCategory)
 				assignCapToDept("Public Works", capId);
 			else if (requestCategory == "Request New Sign")
-				assignCap("TRAFFICENG");
-			else assignCap("TRAFFICLIGHTING");
+				assignCapToStaff("TRAFFICENG");
+			else assignCapToStaff("TRAFFICLIGHTING");
 		} else if (appMatch("ServiceRequest/Transit Buses/NA/NA")){
 			assignCapToDept("Transit", capId);
 		} else if (appMatch("ServiceRequest/Unpermitted Construction/NA/NA")){
@@ -3514,11 +3545,12 @@ function assignStaffDeptToCAP(){
 		} else if (appMatch("ServiceRequest/Zoning Development Information/NA/NA")){
 			assignCapToDept("Planning", capId);
 		} else if (appMatch("ServiceRequest/Illegal Business Use/NA/NA")){
-			gisLayerName = "Environmental Inspection Areas";
+//			gisLayerName = "Environmental Inspection Areas";
+                        assignCapToDept("Environmental Office", capId);
 		} else if (appMatch("ServiceRequest/Park Backflow/NA/NA")){
 			assignCapToDept("Water Operations", capId);
 		} else if (appMatch("ServiceRequest/Sumps and Ditches/NA/NA")){
-			assignCap("STREETMAINT");
+			assignCapToStaff("STREETMAINT");
 		} else if (appMatch("ServiceRequest/Water Quality Inquiry/NA/NA")){
 			assignCapToDept("Water Operations", capId);
 		} else if (appMatch("ServiceRequest/Street Sweeping/NA/NA")){
@@ -3537,7 +3569,7 @@ function assignStaffDeptToCAP(){
 				} else {
 					var lookupUserId = userId.toUpperCase();
 					logDebug("Assigning ServiceRequest to " + lookupUserId);
-					assignCap(lookupUserId);
+					assignCapToStaff(lookupUserId);
 				}
 			}
 		} 
@@ -3546,7 +3578,7 @@ function assignStaffDeptToCAP(){
 	}
 }
 
-function assignCapToDept(deptName, capId){
+function assignCapToDept(deptName, capId){//update to compare existing department to new department and break if matches
 	var deptResult = aa.people.getDepartmentList(null);
 	if (deptResult.getSuccess()){
 		var depts = deptResult.getOutput(), deptFound = false, dept = null;
@@ -3560,6 +3592,8 @@ function assignCapToDept(deptName, capId){
 				var capDetailResult = aa.cap.getCapDetail(capId);
 				if (capDetailResult.getSuccess()){
 					var capDetailModel = capDetailResult.getOutput().getCapDetailModel();
+					var cAsgnedDept = capDetailModel.getAsgnDept();//gets current assigned to department to compare below
+					if (cAsgnedDept == dept.toString()) logDebug("New department is same as current department, not updating Assigned To"); break;//returns debug message and cancels update
 					capDetailModel.setAsgnDept(dept.toString());
 					
 					// write changes to cap detail
@@ -3624,4 +3658,97 @@ function explore(obj){
 			logDebug(x + " = " + obj[x]); 
 		}
 	}
+}
+
+/*--Start functions for SR notifications--*/
+function addParameter(pamaremeters, key, value)
+{
+  if(key != null)
+  {
+    if(value == null)
+    {
+      value = "";
+    }
+    
+    pamaremeters.put(key, value);
+  }
+}
+
+function sendNotification(emailFrom,emailTo,emailCC,templateName,params,reportFile){
+    var itemCap = capId;
+    if (arguments.length == 7) itemCap = arguments[6]; // use cap ID specified in args
+    var id1 = itemCap.ID1;
+    var id2 = itemCap.ID2;
+    var id3 = itemCap.ID3;
+    var capIDScriptModel = aa.cap.createCapIDScriptModel(id1, id2, id3);
+    if (!matches(emailTo,null,"",undefined)) {
+        var result = null;
+        result = aa.document.sendEmailAndSaveAsDocument(emailFrom, emailTo, emailCC, templateName, params, capIDScriptModel, reportFile);
+        if(result.getSuccess()){
+            logDebug("Sent email successfully!");
+            return true;
+        }else{
+            logDebug("Failed to send mail. - " + result.getErrorType());
+            return false;
+        }
+    }else{
+        logDebug("No email address found for logged in user");
+        return false;
+    }
+}
+
+function sendSRContactNotificationEmail(notificationTemplateName,fromEmail){//send param defined notification template to all contacts on record with email address
+	//var fromEmail = "DoNotReply_ACATest@TorranceCA.Gov";
+	//sendNotification params
+        
+        var params = aa.util.newHashtable();
+        //notification template params
+        addParameter(params, "$SRID$", capId.getCustomID());
+        addParameter(params, "$PERMITNAME$", capName);
+        addParameter(params, "$$fileDate$$", fileDate);
+        addParameter(params, "$$SRAlias$$", appTypeArray[1]);
+        
+        //gets contacts from record and sends email to all with email address
+        conArr = new Array();
+        conArr = getContactArray();
+        for (c in conArr) {
+                if (conArr[c]["email"] != "" && conArr[c]["email"] != null && conArr[c]["email"] != "undefined") {
+                        
+                        //contact specific notification template params 
+                        addParameter(params, "$$Applicant$$", conArr[c]["firstName"] + " " + conArr[c]["lastName"]);
+                        
+                        //sending notification to contact with email address
+                        sendNotification(fromEmail, conArr[c]["email"], "", notificationTemplateName, params, null);
+                }
+        }
+}
+/*--End functions for SR notifications--*/
+
+function getAssignedStaff(){
+	var cdScriptObjResult = aa.cap.getCapDetail(capId);
+	var cdScriptObj = cdScriptObjResult.getOutput();
+	var cd = cdScriptObj.getCapDetailModel();
+	var currentAssignedStaff = cd.getAsgnStaff();
+	logDebug("CAP Assigned to: "+currentAssignedStaff);
+	return currentAssignedStaff;
+}
+
+function assignCapToStaff(assignId){ // optional CapId
+	var itemCap = capId
+	if (arguments.length > 1) itemCap = arguments[1]; // use cap ID specified in args
+	var cAssgndStaff = getAssignedStaff();//get current assigned to staff to compare below
+	if(assignId == cAssgndStaff){ logDebug("New Staff is same as current staff, not updating Assigned To"); return false; }//prevents update if no change
+	var cdScriptObjResult = aa.cap.getCapDetail(itemCap);
+	if (!cdScriptObjResult.getSuccess()){ logDebug("**ERROR: No cap detail script object : " + cdScriptObjResult.getErrorMessage()); return false; }
+	var cdScriptObj = cdScriptObjResult.getOutput();
+	if (!cdScriptObj){ logDebug("**ERROR: No cap detail script object"); return false; }
+	cd = cdScriptObj.getCapDetailModel();
+	iNameResult  = aa.person.getUser(assignId);
+	if (!iNameResult.getSuccess()){ logDebug("**ERROR retrieving  user model " + assignId + " : " + iNameResult.getErrorMessage()); return false; }
+	iName = iNameResult.getOutput();
+	cd.setAsgnDept(iName.getDeptOfUser());
+	cd.setAsgnStaff(assignId);
+	cdWrite = aa.cap.editCapDetail(cd)
+	if (cdWrite.getSuccess()){ logDebug("Assigned CAP to " + assignId); }
+	else { logDebug("**ERROR writing capdetail : " + cdWrite.getErrorMessage()); return false; }
 }
