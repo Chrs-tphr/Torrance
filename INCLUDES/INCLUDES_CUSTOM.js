@@ -12,6 +12,8 @@
 |			: 20151112 added info to logdebug statement for tracing renewal fees
 |			: 10/27/2016 - Added functions(getAssignedStaff,assignCapToStaff) and updated(assignCapToDept,assignStaffDeptToCAP)
 |			: 11/10/2016 - Deployed assign dept and staff updates to Dev for testing
+|			: 12/22/2016 - Updated assignCapToDept() to correct break error and added additional debugging, 
+|			: 12/22/2016 - Updated addConditionalAssessmentsForWaterValves() and addConditionalAssessmentsForHydrants() to set Status to "Scheduled"
 |
 /------------------------------------------------------------------------------------------------------*/
 
@@ -3271,6 +3273,7 @@ function addConditionalAssessmentsForWaterValves(){
 				assetCAModel.setAssetType(thisAssetMaster.getG1AssetType());
 				assetCAModel.setAssetGroup(thisAssetMaster.getG1AssetGroup());
 				assetCAModel.setScheduledDate(nowDate);
+				assetCAModel.setStatus("Scheduled");
 				var systemUserObj = aa.person.getUser("ADMIN");
 				if (systemUserObj.getSuccess())
 				{
@@ -3357,6 +3360,7 @@ function addConditionalAssessmentsForHydrants(){
 				assetCAModel.setAssetType(thisAssetMaster.getG1AssetType());
 				assetCAModel.setAssetGroup(thisAssetMaster.getG1AssetGroup());
 				assetCAModel.setScheduledDate(nowDate);
+				assetCAModel.setStatus("Scheduled");
 				var systemUserObj = aa.person.getUser("ADMIN");
 				if (systemUserObj.getSuccess())
 				{
@@ -3436,7 +3440,7 @@ function assignStaffDeptToCAP(){
 			if ("" + requestCategory == "Police Issue")
 				assignCapToStaff("COMMUNITYAFFAIRS");
 //			else gisLayerName = "Environmental Inspection Areas";
-                        else assignCapToDept("Environmental Office", capId);
+			else assignCapToDept("Environmental Office", capId);
 		} else if (appMatch("ServiceRequest/Park Condition/NA/NA") || appMatch("AMS/Parks/*/*")){
 			gisLayerName = "Park Assignment Areas";
 			// check that GIS objects are attached
@@ -3579,8 +3583,10 @@ function assignStaffDeptToCAP(){
 }
 
 function assignCapToDept(deptName, capId){//update to compare existing department to new department and break if matches
+	logDebug("Getting list of department names");
 	var deptResult = aa.people.getDepartmentList(null);
 	if (deptResult.getSuccess()){
+		logDebug("Department names found, validating department");
 		var depts = deptResult.getOutput(), deptFound = false, dept = null;
 		for (var i=0;i<depts.length;i++){
 			if (depts[i].getDeptName() == deptName){
@@ -3593,7 +3599,11 @@ function assignCapToDept(deptName, capId){//update to compare existing departmen
 				if (capDetailResult.getSuccess()){
 					var capDetailModel = capDetailResult.getOutput().getCapDetailModel();
 					var cAsgnedDept = capDetailModel.getAsgnDept();//gets current assigned to department to compare below
-					if (cAsgnedDept == dept.toString()) logDebug("New department is same as current department, not updating Assigned To"); break;//returns debug message and cancels update
+					logDebug("Found current department assigned to: "+cAsgnedDept+". Comparing with department to be assigned");
+					if (cAsgnedDept == dept.toString()){
+						logDebug("New department and current department are the same, canceling update");
+						break;//returns debug message and cancels update
+					}
 					capDetailModel.setAsgnDept(dept.toString());
 					
 					// write changes to cap detail
@@ -3604,6 +3614,7 @@ function assignCapToDept(deptName, capId){//update to compare existing departmen
 						logDebug("ERROR: Unable to write department to cap detail. " + capDetailEditResult.getErrorType() + " " + capDetailEditResult.getErrorMessage());
 					}
 				} else {
+					logDebug("ERROR: Unable to get cap detail. " + capDetailResult.getErrorType() + " " + capDetailResult.getErrorMessage());
 					aa.print("ERROR: Unable to get cap detail. " + capDetailResult.getErrorType() + " " + capDetailResult.getErrorMessage());
 				}
 				
