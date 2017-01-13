@@ -26,7 +26,7 @@ function assignCapToDept(deptName, capId){//update to compare existing departmen
 					// write changes to cap detail
 					var capDetailEditResult = aa.cap.editCapDetail(capDetailModel);
 					if (capDetailEditResult.getSuccess()){
-						logDebug("Successfully updated department to " + deptName);
+						logDebug("Successfully removed assigned staff and updated department to " + deptName);
 					} else {
 						logDebug("ERROR: Unable to write department to cap detail. " + capDetailEditResult.getErrorType() + " " + capDetailEditResult.getErrorMessage());
 					}

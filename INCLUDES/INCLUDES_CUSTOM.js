@@ -14,6 +14,7 @@
 |			: 11/10/2016 - Deployed assign dept and staff updates to Dev for testing
 |			: 12/22/2016 - Updated assignCapToDept() to correct break error and added additional debugging, 
 |			: 12/22/2016 - Updated addConditionalAssessmentsForWaterValves() and addConditionalAssessmentsForHydrants() to set Status to "Scheduled"
+|			: 01/12/2017 - Updated assignCapToDept() to set assigned to staff to null when the department is assigned.
 |
 /------------------------------------------------------------------------------------------------------*/
 
@@ -3440,7 +3441,7 @@ function assignStaffDeptToCAP(){
 			if ("" + requestCategory == "Police Issue")
 				assignCapToStaff("COMMUNITYAFFAIRS");
 //			else gisLayerName = "Environmental Inspection Areas";
-			else assignCapToDept("Environmental Office", capId);
+                        else assignCapToDept("Environmental Office", capId);
 		} else if (appMatch("ServiceRequest/Park Condition/NA/NA") || appMatch("AMS/Parks/*/*")){
 			gisLayerName = "Park Assignment Areas";
 			// check that GIS objects are attached
@@ -3604,12 +3605,13 @@ function assignCapToDept(deptName, capId){//update to compare existing departmen
 						logDebug("New department and current department are the same, canceling update");
 						break;//returns debug message and cancels update
 					}
+					capDetailModel.setAsgnStaff(null);
 					capDetailModel.setAsgnDept(dept.toString());
 					
 					// write changes to cap detail
 					var capDetailEditResult = aa.cap.editCapDetail(capDetailModel);
 					if (capDetailEditResult.getSuccess()){
-						logDebug("Successfully updated department to " + deptName);
+						logDebug("Successfully removed assigned staff and updated department to " + deptName);
 					} else {
 						logDebug("ERROR: Unable to write department to cap detail. " + capDetailEditResult.getErrorType() + " " + capDetailEditResult.getErrorMessage());
 					}
