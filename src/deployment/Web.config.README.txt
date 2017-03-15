@@ -1,0 +1,13 @@
+Add entityFramework config section reference
+
+Add QueryStringModule app settings
+
+Add AccelaEntities connection string
+
+Add QueryStringModule http module
+
+Add entityFramework config section definition
+
+
+
+
