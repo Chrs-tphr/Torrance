@@ -23,6 +23,7 @@ namespace Woolpert.ACAModules {
         private string id1ParameterName;
         private string id2ParameterName;
         private string id3ParameterName;
+        private string moduleParameterName;
 
         private Woolpert.BusinessObjects.Accela.AccelaEntities dbContext = null;
 
@@ -39,6 +40,7 @@ namespace Woolpert.ACAModules {
                 this.id1ParameterName = System.Configuration.ConfigurationManager.AppSettings["QueryStringModule:Id1ParameterName"].ToLower();
                 this.id2ParameterName = System.Configuration.ConfigurationManager.AppSettings["QueryStringModule:Id2ParameterName"].ToLower();
                 this.id3ParameterName = System.Configuration.ConfigurationManager.AppSettings["QueryStringModule:Id3ParameterName"].ToLower();
+                this.moduleParameterName = System.Configuration.ConfigurationManager.AppSettings["QueryStringModule:ModuleParameterName"].ToLower();
             } catch (Exception ex) {
                 this.logger.Fatal(ex);
             }
@@ -101,6 +103,10 @@ namespace Woolpert.ACAModules {
                                 queryString.Add(this.id1ParameterName, entity.B1_PER_ID1);
                                 queryString.Add(this.id2ParameterName, entity.B1_PER_ID2);
                                 queryString.Add(this.id3ParameterName, entity.B1_PER_ID3);
+
+                                if (queryString[this.moduleParameterName] == null) {
+                                    queryString.Add(this.moduleParameterName, entity.B1_MODULE_NAME);
+                                }
 
                                 this.logger.Debug(String.Format("queryString:{0}", queryString.ToString()));
 
