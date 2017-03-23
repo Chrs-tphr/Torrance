@@ -20,7 +20,7 @@ function validateWorkOrderAssetAndCosting() {
         var workOrderCostingTransactions = getWorkOrderCostingTransactions(capId.ID1, capId.ID2, capId.ID3)
         //aa.print("workOrderCostingTransactions: " + workOrderCostingTransactions.length);
 
-        if (assetList.length < 100 || workOrderCostingTransactions.length < 100) {
+        if (assetList.length < 1 || workOrderCostingTransactions.length < 1) {
             aa.print("Begin cancelling transaction");
 
             aa.print("ScriptReturnCode: " + aa.env.getValue("ScriptReturnCode"));
