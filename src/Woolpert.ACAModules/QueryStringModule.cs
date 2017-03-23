@@ -79,18 +79,18 @@ namespace Woolpert.ACAModules {
                 var queryString = request.QueryString;
                 this.logger.Debug(String.Format("queryString:{0}", queryString.ToString()));
 
-                string removeParameterValue = null;
+                string altIdParameterValue = null;
 
                 this.altIdParameterNames.ToList().ForEach(altIdParameterName => {
 
-                    removeParameterValue = queryString[altIdParameterName];
+                    altIdParameterValue = queryString[altIdParameterName];
 
-                    if (removeParameterValue != null) {
+                    if (altIdParameterValue != null) {
                         try {
 
                             this.dbContext = new AccelaEntities();
 
-                            var entity = this.dbContext.B1PERMIT.FirstOrDefault(permit => permit.B1_ALT_ID == removeParameterValue);
+                            var entity = this.dbContext.B1PERMIT.FirstOrDefault(permit => permit.B1_ALT_ID == altIdParameterValue);
 
                             if (entity != null) {
 
@@ -98,11 +98,19 @@ namespace Woolpert.ACAModules {
 
                                 readOnlyProperty.SetValue(queryString, false, null);
 
-                                queryString.Remove(altIdParameterName);
+                                //queryString.Remove(altIdParameterName);
 
-                                queryString.Add(this.id1ParameterName, entity.B1_PER_ID1);
-                                queryString.Add(this.id2ParameterName, entity.B1_PER_ID2);
-                                queryString.Add(this.id3ParameterName, entity.B1_PER_ID3);
+                                if (queryString[this.id1ParameterName] == null) {
+                                    queryString.Add(this.id1ParameterName, entity.B1_PER_ID1);
+                                }
+
+                                if (queryString[this.id2ParameterName] == null) {
+                                    queryString.Add(this.id2ParameterName, entity.B1_PER_ID2);
+                                }
+
+                                if (queryString[this.id3ParameterName] == null) {
+                                    queryString.Add(this.id3ParameterName, entity.B1_PER_ID3);
+                                }
 
                                 if (queryString[this.moduleParameterName] == null) {
                                     queryString.Add(this.moduleParameterName, entity.B1_MODULE_NAME);
