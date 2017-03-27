@@ -1,25 +1,76 @@
-function sendSRContactNotificationEmail(notificationTemplateName,fromEmail){//send param defined notification template to all contacts on record with email address
-	//var fromEmail = "DoNotReply_ACATest@TorranceCA.Gov";
-	//sendNotification params
+function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
+    aa.print("Enter sendSRContactNotificationEmail()");
+    aa.print("");
+
+    //send param defined notification template to all contacts on record with email address
+
+    //var contactType = "Complainant"
+    var contactType = "Reporting Party"
+    var _fileDateObj = cap.getFileDate();
+    var _fileDate = "" + _fileDateObj.getMonth() + "/" + _fileDateObj.getDayOfMonth() + "/" + _fileDateObj.getYear();
+
+    var hashTable = aa.util.newHashtable();
+    
+    //notification template hashTable
+    hashTable.put("$$SRID$$", capId.getCustomID() || "");
+    hashTable.put("$$PERMITNAME$$", cap.getSpecialText() || "");
+    hashTable.put("$$FILEDATE$$", _fileDate || "");
+    hashTable.put("$$SRALIAS$$", cap.getCapType().toString().split("/")[1] || "");
+    
+    var _capModel = cap.getCapModel();
         
-        var params = aa.util.newHashtable();
-        //notification template params
-        addParameter(params, "$SRID$", capId.getCustomID());
-        addParameter(params, "$PERMITNAME$", capName);
-        addParameter(params, "$$fileDate$$", fileDate);
-        addParameter(params, "$$SRAlias$$", appTypeArray[1]);
-        
-        //gets contacts from record and sends email to all with email address
-        conArr = new Array();
-        conArr = getContactArray();
-        for (c in conArr) {
-                if (conArr[c]["email"] != "" && conArr[c]["email"] != null && conArr[c]["email"] != "undefined") {
-                        
-                        //contact specific notification template params 
-                        addParameter(params, "$$Applicant$$", conArr[c]["firstName"] + " " + conArr[c]["lastName"]);
-                        
-                        //sending notification to contact with email address
-                        sendNotification(fromEmail, conArr[c]["email"], "", notificationTemplateName, params, null);
-                }
+    hashTable.put("$$SPECIALTEXT$$", _capModel.specialText || "");    
+
+    var capAddressResult = aa.address.getAddressByCapId(capId);
+    if (capAddressResult.getSuccess()) {
+        var capAddresses = capAddressResult.getOutput();
+        for (capAddress in capAddresses) {
+            capAddress = capAddresses[capAddress];
+            if (capAddress.primaryFlag == "Y") {
+                hashTable.put("$$DISPLAYADDRESS$$", capAddress.displayAddress || "");
+            }
         }
+    }
+
+    var capContactResult = aa.people.getCapContactByCapID(capId);
+    if (capContactResult.getSuccess()) {
+        var capContacts = capContactResult.getOutput();
+        for (capContact in capContacts) {
+            capContact = capContacts[capContact];
+            if (capContact.capContactModel != null && capContact.capContactModel.contactType == contactType) {
+                var contactName = capContact.lastName + ", " + capContact.firstName;
+                hashTable.put("$$CONTACTNAME$$", contactName || "");
+            }
+        }
+    }
+
+    aa.print("hashTable: " + objectMapper.writeValueAsString(hashTable));
+    aa.print("");
+
+    //Send a customized notification to each contact with an email address
+    var contacts = getContactArray();
+    for (contact in contacts) {
+        contact = contacts[contact];
+        toEmail = contact["email"];
+        applicant = (contact["firstName"] + " " + contact["lastName"]) || "";
+        if (toEmail != "" && toEmail != null && toEmail != "undefined") {
+
+            //Update the hashTable with contact-specific information
+            hashTable.put("$$APPLICANT$$", applicant);
+
+            //Send the email
+            sendNotification(
+                fromEmail,
+                toEmail,
+                "",
+                notificationTemplateName,
+                hashTable,
+                null
+            );
+            aa.print("");
+        }
+    }
+
+    aa.print("");
+    aa.print("Exit sendSRContactNotificationEmail()");
 }
