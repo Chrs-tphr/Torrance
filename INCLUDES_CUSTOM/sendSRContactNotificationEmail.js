@@ -4,6 +4,17 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
 
     //send param defined notification template to all contacts on record with email address
 
+    //Template Parameters populated by this script:
+
+    //$$SRID$$ - cap custom id
+    //$$PERMITNAME$$ - cap special text
+    //$$FILEDATE$$ - cap file date
+    //$$SRALIAS$$ - cap type[1]
+    //$$SPECIALTEXT$$ - cap model special text
+    //$$DISPLAYADDRESS$$ - primary cap address display address
+    //$$CONTACTNAME$$ - 'Reporting Party' contact last name + ', ' + contact first name
+    //$$APPLICANT$$ - Each cap contact's first name + " " + last name, runs in a loop when sending email to each cap contact
+
     //var contactType = "Complainant"
     var contactType = "Reporting Party"
     var _fileDateObj = cap.getFileDate();
@@ -44,8 +55,8 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
         }
     }
 
-    aa.print("hashTable: " + objectMapper.writeValueAsString(hashTable));
-    aa.print("");
+    //aa.print("hashTable: " + objectMapper.writeValueAsString(hashTable));
+    //aa.print("");
 
     //Send a customized notification to each contact with an email address
     var contacts = getContactArray();
@@ -57,6 +68,8 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
 
             //Update the hashTable with contact-specific information
             hashTable.put("$$APPLICANT$$", applicant);
+            aa.print("hashTable: " + objectMapper.writeValueAsString(hashTable));
+            aa.print("");
 
             //Send the email
             sendNotification(
@@ -67,7 +80,6 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
                 hashTable,
                 null
             );
-            aa.print("");
         }
     }
 
