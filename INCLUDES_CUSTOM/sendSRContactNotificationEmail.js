@@ -15,6 +15,8 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
     //$$CONTACTNAME$$ - 'Reporting Party' contact last name + ', ' + contact first name
     //$$APPLICANT$$ - Each cap contact's first name + " " + last name, runs in a loop when sending email to each cap contact
 
+    var objectMapper = new org.codehaus.jackson.map.ObjectMapper();
+
     //var contactType = "Complainant"
     var contactType = "Reporting Party"
     var _fileDateObj = cap.getFileDate();

@@ -3729,22 +3729,24 @@ function sendSRContactNotificationEmail(notificationTemplateName, fromEmail) {
     //$$CONTACTNAME$$ - 'Reporting Party' contact last name + ', ' + contact first name
     //$$APPLICANT$$ - Each cap contact's first name + " " + last name, runs in a loop when sending email to each cap contact
 
+    var objectMapper = new org.codehaus.jackson.map.ObjectMapper();
+
     //var contactType = "Complainant"
     var contactType = "Reporting Party"
     var _fileDateObj = cap.getFileDate();
     var _fileDate = "" + _fileDateObj.getMonth() + "/" + _fileDateObj.getDayOfMonth() + "/" + _fileDateObj.getYear();
 
     var hashTable = aa.util.newHashtable();
-    
+
     //notification template hashTable
     hashTable.put("$$SRID$$", capId.getCustomID() || "");
     hashTable.put("$$PERMITNAME$$", cap.getSpecialText() || "");
     hashTable.put("$$FILEDATE$$", _fileDate || "");
     hashTable.put("$$SRALIAS$$", cap.getCapType().toString().split("/")[1] || "");
-    
+
     var _capModel = cap.getCapModel();
-        
-    hashTable.put("$$SPECIALTEXT$$", _capModel.specialText || "");    
+
+    hashTable.put("$$SPECIALTEXT$$", _capModel.specialText || "");
 
     var capAddressResult = aa.address.getAddressByCapId(capId);
     if (capAddressResult.getSuccess()) {
