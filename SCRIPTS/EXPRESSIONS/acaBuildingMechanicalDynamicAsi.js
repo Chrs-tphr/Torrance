@@ -68,6 +68,7 @@ var totalRowCount = expression.getTotalRowCount();
 
 //INSERT resetField ONLINE PERMIT SELECTION{resetField}--------------------------------------------
 if(variable0.value==null || variable0.value.equals("")){
+	variable0.required=true;expression.setReturn(variable0);
 	variable1.hidden=true;variable1.required=false;variable1.readOnly=false;variable1.value=null;expression.setReturn(variable1);
 	variable2.hidden=true;variable2.required=false;variable2.readOnly=false;variable2.value=null;expression.setReturn(variable2);
 	variable3.hidden=true;variable3.required=false;variable3.readOnly=false;variable3.value=null;expression.setReturn(variable3);
