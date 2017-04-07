@@ -23,9 +23,12 @@ function logMessage(messageString) {
     aa.print(messageString);
 }
 
-var permitId1 = "REC17";
+//var permitId1 = "REC17";
+//var permitId2 = "00000";
+//var permitId3 = "00004";
+var permitId1 = "17CAP";
 var permitId2 = "00000";
-var permitId3 = "00004";
+var permitId3 = "00070";
 
 getParkAssetStaffAssignment(permitId1, permitId2, permitId3);
 
@@ -76,8 +79,8 @@ function getParkAssetStaffAssignment(permitId1, permitId2, permitId3) {
 
         var assetId = asset.g1AssetID;
         aa.print("assetId: " + assetId);
-        assetId = "PP001 SF1";
-        aa.print("assetId: " + assetId);
+        //assetId = "P001 SF1";
+        //aa.print("assetId: " + assetId);
 
         var assetIdArray = assetId.split(" ");
         if (assetIdArray.length > 0) {
