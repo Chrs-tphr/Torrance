@@ -17,7 +17,7 @@
 |			: 01/12/2017 - Updated assignCapToDept() to set assigned to staff to null when the department is assigned.
 |			: 03/23/2017 - Added validateWorkOrderAssetAndCosting() and getWorkOrderCostingTransactions() for validating on Status Update before.
 |			: 03/28/2017 - Updated sendSRContactNotificationEmail() to normalize template naming conventions, add support for passing additional template parameters
-|			: 04/08/2017 - Added disableBldBldSubTasks()
+|			: 04/08/2017 - Added disableBldBldSubTasks() and setExpirationDateForOnlineIssuance()
 |
 /------------------------------------------------------------------------------------------------------*/
 
@@ -3931,13 +3931,18 @@ function validateWorkOrderAssetAndCosting() {
 }
 
 function disableBldBldSubTasks(){
-	setTask("Planning Final","N","N","BLD_MECH_SUB");
-	setTask("Engineering Permit Final","N","N","BLD_MECH_SUB");
-	setTask("Fire Final","N","N","BLD_MECH_SUB");
-	setTask("Environmental/Zoning Final","N","N","BLD_MECH_SUB");
-	setTask("Engineering Plan Check Final","N","N","BLD_MECH_SUB");
-	setTask("Grading Final","N","N","BLD_MECH_SUB");
-	setTask("Water Resources Final","N","N","BLD_MECH_SUB");
-	setTask("Waste Management Final","N","N","BLD_MECH_SUB");
+	setTask("Planning Final","N","N","BLD_BLD_SUB");
+	setTask("Engineering Permit Final","N","N","BLD_BLD_SUB");
+	setTask("Fire Final","N","N","BLD_BLD_SUB");
+	setTask("Environmental/Zoning Final","N","N","BLD_BLD_SUB");
+	setTask("Engineering Plan Check Final","N","N","BLD_BLD_SUB");
+	setTask("Grading Final","N","N","BLD_BLD_SUB");
+	setTask("Water Resources Final","N","N","BLD_BLD_SUB");
+	setTask("Waste Management Final","N","N","BLD_BLD_SUB");
 }
 
+function setExpirationDateForOnlineIssuance(){
+	if(AInfo("Permit Scope") != null && AInfo("Permit Scope") != "" && balanceDue <= 0){
+		editAppSpecific("Expiration Date", dateAdd(null,0));
+	}
+}
