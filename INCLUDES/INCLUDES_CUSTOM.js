@@ -3452,45 +3452,64 @@ function assignStaffDeptToCAP(){
 		    //  Removed 2017-04-10 by N.Victor Staggs, Woolpert Inc.
 		    //****************************************************************
 
-			//gisLayerName = "Park Assignment Areas";
-			//// check that GIS objects are attached
-			//var gisResult = aa.gis.getCapGISObjects(capId);
-			//if (gisResult.getSuccess()){
-			//	var gisObjs = gisResult.getOutput();
-			//	if (!gisObjs || gisObjs.length == 0){
-			//		// attach asset GIS object
-			//		var assetGISResult = aa.gis.getAssetGISObject(capId);
-			//		if (assetGISResult.getSuccess()){
-			//			var assetGISObj = assetGISResult.getOutput()[0];
-			//			var serviceId = assetGISObj.getGisServiceId();
-			//			var typeId = assetGISObj.getGisTypeId();
-			//			var gisId = assetGISObj.getGISObjects()[0].getGisId();
-			//			logDebug("Asset GIS found.");
-			//			logDebug("Service: " + serviceId);
-			//			logDebug("Type: " + typeId);
-			//			logDebug("GISID: " + gisId);
-			//			aa.gis.addCapGISObject(capId, serviceId, typeId, gisId, true);
-			//		} else
-			//			logDebug("Asset GIS not found.");
-			//	}
+		    //gisLayerName = "Park Assignment Areas";
+		    //// check that GIS objects are attached
+		    //var gisResult = aa.gis.getCapGISObjects(capId);
+		    //if (gisResult.getSuccess()){
+		    //	var gisObjs = gisResult.getOutput();
+		    //	if (!gisObjs || gisObjs.length == 0){
+		    //		// attach asset GIS object
+		    //		var assetGISResult = aa.gis.getAssetGISObject(capId);
+		    //		if (assetGISResult.getSuccess()){
+		    //			var assetGISObj = assetGISResult.getOutput()[0];
+		    //			var serviceId = assetGISObj.getGisServiceId();
+		    //			var typeId = assetGISObj.getGisTypeId();
+		    //			var gisId = assetGISObj.getGISObjects()[0].getGisId();
+		    //			logDebug("Asset GIS found.");
+		    //			logDebug("Service: " + serviceId);
+		    //			logDebug("Type: " + typeId);
+		    //			logDebug("GISID: " + gisId);
+		    //			aa.gis.addCapGISObject(capId, serviceId, typeId, gisId, true);
+		    //		} else
+		    //			logDebug("Asset GIS not found.");
+		    //	}
 
-			//} else {
-			//	logDebug("Unable to verify asset GIS object attached.");
+		    //} else {
+		    //	logDebug("Unable to verify asset GIS object attached.");
 		    //}
 
-		    //****************************************************************
-		    //  Added 2017-04-10 by N.Victor Staggs, Woolpert Inc.
-		    //****************************************************************
-		    var parkAssetStaffAssignment = getParkAssetStaffAssignment(
-                aa.env.getValue("PermitId1"),
-                aa.env.getValue("PermitId2"),
-                aa.env.getValue("PermitId3")
-            );
+		    if(
+                (appMatch("AMS/Parks/Park/Mowing") == false)
+                    &&
+                (appMatch("AMS/Parks/Park/Mowing Special Request") == false)
+                    &&
+                (appMatch("AMS/Parks/Park/Special Task") == false)
+            ){
+		        //****************************************************************
+		        //  Added 2017-04-10 by N.Victor Staggs, Woolpert Inc.
+		        //****************************************************************
+		        var parkAssetStaffAssignment = getParkAssetStaffAssignment(
+                    aa.env.getValue("PermitId1"),
+                    aa.env.getValue("PermitId2"),
+                    aa.env.getValue("PermitId3")
+                );
 
-		    if ((parkAssetStaffAssignment != null) && (typeof(parkAssetStaffAssignment) != "undefined")) {
-		        assignCapToStaff(parkAssetStaffAssignment);
+                if ((parkAssetStaffAssignment != null) && (typeof(parkAssetStaffAssignment) != "undefined")) {
+                    assignCapToStaff(parkAssetStaffAssignment);
+                }
 		    }
 
+		    if (appMatch("AMS/Parks/Park/Mowing") == true) {
+		        assignCapToDept("Parks");//Pulled value from AAMaint department dropdown
+		    }
+
+		    if (appMatch("AMS/Parks/Park/Mowing Special Request") == true) {
+		        assignCapToStaff("Park Services Pesticide Route");//Pulled value from AAMaint staff dropdown
+		    }
+
+		    if (appMatch("AMS/Parks/Park/Special Task") == true) {
+		        assignCapToStaff("Park Services Projects Crew");//Pulled value from AAMaint staff dropdown
+		    }
 
 		} else if (appMatch("ServiceRequest/Parking OR Vehicle Issue/NA/NA")){
 			if (!requestCategory || "" + requestCategory == "On Property")
