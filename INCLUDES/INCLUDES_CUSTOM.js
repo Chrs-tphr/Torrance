@@ -3478,6 +3478,10 @@ function assignStaffDeptToCAP(){
 		    //	logDebug("Unable to verify asset GIS object attached.");
 		    //}
 
+		    //****************************************************************
+		    //  Added 2017-04-10 by N.Victor Staggs, Woolpert Inc.
+		    //****************************************************************
+
 		    if(
                 (appMatch("AMS/Parks/Park/Mowing") == false)
                     &&
@@ -3485,9 +3489,7 @@ function assignStaffDeptToCAP(){
                     &&
                 (appMatch("AMS/Parks/Park/Special Task") == false)
             ){
-		        //****************************************************************
-		        //  Added 2017-04-10 by N.Victor Staggs, Woolpert Inc.
-		        //****************************************************************
+		        
 		        var parkAssetStaffAssignment = getParkAssetStaffAssignment(
                     aa.env.getValue("PermitId1"),
                     aa.env.getValue("PermitId2"),
