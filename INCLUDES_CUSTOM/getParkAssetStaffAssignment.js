@@ -45,14 +45,14 @@ function getParkAssetStaffAssignment(permitId1, permitId2, permitId3) {
 
         var assetId = asset.g1AssetID;
         //aa.print("assetId: " + assetId);
-        assetId = "PP001 SF1";
-        aa.print("assetId: " + assetId);
+        //assetId = "PP001 SF1";
+        //aa.print("assetId: " + assetId);
 
         var assetIdArray = assetId.split(" ");
         if (assetIdArray.length > 0) {
 
             var standardChoiceValue = assetIdArray[0];
-            aa.print("standardChoiceValue: " + standardChoiceValue);
+            //aa.print("standardChoiceValue: " + standardChoiceValue);
 
             var standardChoiceName = "PARK_ASSET_ASSIGNMENTS";
             
@@ -76,6 +76,6 @@ function getParkAssetStaffAssignment(permitId1, permitId2, permitId3) {
     //    aa.print(standardChoice + ": " + standardChoices[standardChoice]);
     //}
 
-    aa.print("Exit getParkAssetStaffAssignment() with " + parkAssetStaffAssignment);
+    aa.print("Exit getParkAssetStaffAssignment() with '" + parkAssetStaffAssignment + "'");
     return parkAssetStaffAssignment;
 }

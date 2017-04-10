@@ -110,7 +110,7 @@ function getParkAssetStaffAssignment(permitId1, permitId2, permitId3) {
     //    aa.print(standardChoice + ": " + standardChoices[standardChoice]);
     //}
 
-    aa.print("Exit getParkAssetStaffAssignment() with " + parkAssetStaffAssignment);
+    aa.print("Exit getParkAssetStaffAssignment() with '" + parkAssetStaffAssignment + "'");
     return parkAssetStaffAssignment;
 }
 
