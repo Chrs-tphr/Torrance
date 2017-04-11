@@ -23,13 +23,13 @@ eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS"));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS"));
 eval(getScriptText("INCLUDES_CUSTOM"));
 
-//function logDebug(debugString) {
-//    aa.print(debugString);
-//}
+function logDebug(debugString) {
+    aa.print(debugString);
+}
 
-//function logMessage(messageString) {
-//    aa.print(messageString);
-//}
+function logMessage(messageString) {
+    aa.print(messageString);
+}
 
 //var assetCAPK = aa.env.getValue("AssetCAPK");
 //var assetCAID = assetCAPK.getAssetCAID();
@@ -54,6 +54,11 @@ function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
     if (getAssetCAByPKScriptResult.getSuccess()) {
 
         var assetCAScriptModel = getAssetCAByPKScriptResult.getOutput();
+        //aa.print("type: '" + type + "'");
+        //aa.print("assetCAScriptModel:" + assetCAScriptModel);
+        //printObject(assetCAScriptModel, "");
+        //aa.print(objectMapper.writeValueAsString(assetCAScriptModel));
+        //aa.print(assetCAScriptModel.getCAAttributes());
 
         var assetSeq = assetCAScriptModel.assetSeq;
         aa.print("assetSeq: " + assetSeq);
@@ -62,21 +67,27 @@ function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
         aa.print("assetID: " + assetID);
 
         var assetScriptModel = null;
+        var refAddressModel = null
 
         var getAssetDataScriptResult = aa.asset.getAssetData(assetSeq);
-        //aa.print(getAssetDataScriptResult);
         if (getAssetDataScriptResult.getSuccess()) {
-            assetScriptModel = getAssetDataScriptResult.getOutput();            
-        }
 
-        aa.print("assetScriptModel: " + assetScriptModel);
+            assetScriptModel = getAssetDataScriptResult.getOutput();
+            //aa.print("assetScriptModel: " + assetScriptModel);
+            //aa.print(objectMapper.writeValueAsString(assetScriptModel));
 
-        var type = assetCAScriptModel.conditionAssessment;
-        //aa.print("type: '" + type + "'");
-        //aa.print("assetCAScriptModel:" + assetCAScriptModel);
-        //printObject(assetCAScriptModel, "");
-        //aa.print(objectMapper.writeValueAsString(assetCAScriptModel));
-        //aa.print(assetCAScriptModel.getCAAttributes());
+            var assetMasterModel = assetScriptModel.assetMasterModel;
+            if (assetMasterModel != null) {
+                refAddressModel = assetMasterModel.refAddressModel;
+                //aa.print("refAddressModel: " + refAddressModel);
+                //aa.print(objectMapper.writeValueAsString(refAddressModel));
+            }
+
+        } else {
+            aa.print("Error: " + getAssetDataScriptResult.getErrorType() + " " + getAssetDataScriptResult.getErrorMessage());
+        }        
+
+        var type = assetCAScriptModel.conditionAssessment;        
 
         // query CA attributes
         var attributes = {};
@@ -148,88 +159,26 @@ function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
         
         if (type == "BI-ANNUAL FIRE HYDRANT INSPECT") {
 
-            //aa.print(type == 'BI-ANNUAL FIRE HYDRANT INSPECT');
-
             if (attributes.HydrantBuryCondition_Text == "Rusted" || attributes.HydrantBuryCondition_Text == "Too Low") {
-
-                aa.print("attributes.HydrantBuryCondition_Text: " + attributes.HydrantBuryCondition_Text);
-
+                var description = "Hydrant Bury Condition: " + attributes.HydrantBuryCondition_Text;
                 var woCapId = createCap("AMS/Water Operations/Hydrants/Replace", "Fire Hydrant Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.HydrantCondition == "Failed") {
-
-                aa.print("attributes.HydrantCondition: " + attributes.HydrantCondition);
-
+                var description = "Hydrant Condition: " + attributes.HydrantCondition;
                 var woCapId = createCap("AMS/Water Operations/Hydrants/Replace", "Fire Hydrant Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.HydrantIsOperable == "N") {
-
-                aa.print("attributes.HydrantIsOperable: " + attributes.HydrantIsOperable);
-
+                var description = "Hydrant Is Operable: " + attributes.HydrantIsOperable;
                 var woCapId = createCap("AMS/Water Operations/Hydrants/Replace", "Fire Hydrant Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.HydrantMaintenanceReqd == "Y") {
-
-                aa.print("attributes.HydrantMaintenanceReqd: " + attributes.HydrantMaintenanceReqd);
-
+                var description = "Hydrant Maintenance Required: " + attributes.HydrantMaintenanceReqd;
                 var woCapId = createCap("AMS/Water Operations/Hydrants/Repair", "Fire Hydrant Repair: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.HydrantStemCondition == "Bent" || attributes.HydrantStemCondition == "Defective") {
-
-                aa.print("attributes.HydrantStemCondition: " + attributes.HydrantStemCondition);
-
+                var description = "Hydrant Stem Condition: " + attributes.HydrantStemCondition;
                 var woCapId = createCap("AMS/Water Operations/Hydrants/Replace", "Fire Hydrant Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             }
         }
 
@@ -238,72 +187,72 @@ function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
             //aa.print(type == 'TRI-ANNUAL WATER VALVE INSPECT');
 
             if (attributes.ValveCondition == "Failed" || attributes.ValveCondition == "Poor") {
-
-                aa.print("attributes.ValveCondition: " + attributes.ValveCondition);
-
+                var description = "Valve Condition: " + attributes.ValveCondition;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Replace", "Water Valve Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.ValveIsOperable == "N") {
-
-                aa.print("attributes.ValveIsOperable: " + attributes.ValveIsOperable);
-
+                var description = "Valve Is Operable: " + attributes.ValveIsOperable;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Replace", "Water Valve Replace: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
-            } else if (attributes.ValveNutCondition == "Broken") {
-                aa.print("attributes.ValveNutCondition: " + attributes.ValveNutCondition);
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
+            } else if (attributes.ValveNutCondition == "Broken") {                
+                var description = "Valve Nut Condition: " + attributes.ValveNutCondition;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Repair", "Water Valve Repair: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
-
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             } else if (attributes.ValveIsPavedOver == "Y") {
-
-                aa.print("attributes.ValveIsPavedOver: " + attributes.ValveIsPavedOver);
-
+                var description = "Valve Is Paved Over: " + attributes.ValveIsPavedOver;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Repair", "Water Valve Repair: " + assetCAScriptModel.assetID);
-                aa.print("CapId: " + woCapId);
-
-                var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
-                if (woAssetModelRequest.getSuccess()) {
-                    var woAssetModel = woAssetModelRequest.getOutput();
-                    woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
-                    woAssetModel.setCapID(woCapId);
-                    aa.asset.createWorkOrderAsset(woAssetModel);
-                    aa.print("Asset attached to work order");
-                }
+                setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
             }
         }
     }
     
     aa.print("Exit createWorkOrderOnConditionAssessmentOrWorkOrderFail()");
+}
+
+function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
+    aa.print("Enter setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
+
+    aa.print("assetCAScriptModel: " + assetCAScriptModel);
+    aa.print("assetScriptModel: " + assetScriptModel);
+    aa.print("refAddressModel: " + refAddressModel);
+    aa.print("workOrderCapId: " + workOrderCapId);
+    aa.print("description: " + description);
+
+    var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
+
+    if (woAssetModelRequest.getSuccess()) {
+
+        var woAssetModel = woAssetModelRequest.getOutput();
+        woAssetModel.setAssetPK(assetScriptModel.getAssetPK());
+        woAssetModel.setCapID(workOrderCapId);
+
+        aa.print("Begin calling aa.asset.createWorkOrderAsset()");
+        aa.asset.createWorkOrderAsset(woAssetModel);        
+        aa.print("End calling aa.asset.createWorkOrderAsset()");
+        aa.print("Work order asset set");
+
+        aa.print("Begin calling updateWorkDesc()");
+        updateWorkDesc(description, workOrderCapId); //INCLUDES_ACCELA_FUNCTIONS.js
+        aa.print("End calling updateWorkDesc()");
+        aa.print("Work order description set");
+
+        //// Copy Addresses
+        //capAddressResult = aa.address.getAddressByCapId(capId);
+        //if (capAddressResult.getSuccess()) {
+        //    Address = capAddressResult.getOutput();
+        //    for (yy in Address) {
+        //        newAddress = Address[yy];
+        //        newAddress.setCapID(newId);
+        //        aa.address.createAddress(newAddress);
+        //        logDebug("added address");
+        //    }
+        //}
+
+    } else {
+        aa.print("Error: " + woAssetModelRequest.getErrorType() + " " + woAssetModelRequest.getErrorMessage());
+    }
+
+    aa.print("Exit setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 }
 
 function printObject(item, tabs){
