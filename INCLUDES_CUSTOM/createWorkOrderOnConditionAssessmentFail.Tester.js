@@ -1,4 +1,4 @@
-aa.print("Enter createWorkOrderOnConditionAssessmentOrWorkOrderFail.Tester.js");
+aa.print("Enter createWorkOrderOnConditionAssessmentFail.Tester.js");
 aa.print("");
 
 //The documentation says the IN parameter is:
@@ -33,13 +33,13 @@ function logMessage(messageString) {
 
 //var assetCAPK = aa.env.getValue("AssetCAPK");
 //var assetCAID = assetCAPK.getAssetCAID();
-var assetCAID = 201; //201 200 145 144 143 142 (BI-ANNUAL FIRE HYDRANT INSPECT)
-//var assetCAID = 199; //193 192 191 190 189 (TRI-ANNUAL WATER VALVE INSPECT)
+//var assetCAID = 201; //201 200 145 144 143 142 (BI-ANNUAL FIRE HYDRANT INSPECT)
+var assetCAID = 199; //193 192 191 190 189 (TRI-ANNUAL WATER VALVE INSPECT)
 
-createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID);
+createWorkOrderOnConditionAssessmentFail(assetCAID);
 
-function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
-    aa.print("Enter createWorkOrderOnConditionAssessmentOrWorkOrderFail()");
+function createWorkOrderOnConditionAssessmentFail(assetCAID) {
+    aa.print("Enter createWorkOrderOnConditionAssessmentFail()");
     
     //Create 1 WO for each CA with 1 or many failures 
     //Attach the asset from the CA to the WO
@@ -205,7 +205,7 @@ function createWorkOrderOnConditionAssessmentOrWorkOrderFail(assetCAID) {
         }
     }
     
-    aa.print("Exit createWorkOrderOnConditionAssessmentOrWorkOrderFail()");
+    aa.print("Exit createWorkOrderOnConditionAssessmentFail()");
 }
 
 function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
@@ -292,4 +292,4 @@ function printObject(item, tabs){
 }
 
 aa.print("");
-aa.print("Exit createWorkOrderOnConditionAssessmentOrWorkOrderFail.Tester.js");
+aa.print("Exit createWorkOrderOnConditionAssessmentFail.Tester.js");
