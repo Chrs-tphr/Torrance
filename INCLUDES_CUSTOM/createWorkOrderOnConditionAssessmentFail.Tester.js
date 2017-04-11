@@ -211,11 +211,11 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
 function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
     aa.print("Enter setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 
-    //aa.print("assetCAScriptModel: " + assetCAScriptModel);
-    //aa.print("assetScriptModel: " + assetScriptModel);
-    //aa.print("refAddressModel: " + refAddressModel);
-    //aa.print("workOrderCapId: " + workOrderCapId);
-    //aa.print("description: " + description);
+    aa.print("assetCAScriptModel: " + assetCAScriptModel);
+    aa.print("assetScriptModel: " + assetScriptModel);
+    aa.print("refAddressModel: " + refAddressModel);
+    aa.print("workOrderCapId: " + workOrderCapId);
+    aa.print("description: " + description);
 
     var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
 
