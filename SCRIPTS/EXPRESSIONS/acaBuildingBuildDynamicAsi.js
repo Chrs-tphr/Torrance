@@ -71,7 +71,6 @@ var variable38=expression.getValue("ASI::SETBACK INFORMATION::Interior YRD Ft");
 var variable39=expression.getValue("ASI::SETBACK INFORMATION::Side C/L Ft");
 var variable40=expression.getValue("ASI::SETBACK INFORMATION::Side R/W Ft");
 var variable41=expression.getValue("ASI::SETBACK INFORMATION::Side YRD Ft");
-
 //END getField-------------------------------------------------------------------------------------
 
 var totalRowCount = expression.getTotalRowCount();
@@ -136,7 +135,7 @@ if(variable0.value.equals("Residential Reroof")){
 	variable6.hidden=true;variable6.required=false;variable6.readOnly=true;variable6.value="No";expression.setReturn(variable6);
 	variable7.hidden=true;variable7.required=false;variable7.readOnly=false;variable7.value=null;expression.setReturn(variable7);
 	variable8.hidden=false;variable8.required=true;variable8.readOnly=true;variable8.value="Yes";expression.setReturn(variable8);
-	variable9.hidden=false;variable9.required=false;variable9.readOnly=true;variable9.value="Yes";expression.setReturn(variable9);
+	variable9.hidden=true;variable9.required=false;variable9.readOnly=true;variable9.value="No";expression.setReturn(variable9);
 	variable10.hidden=true;variable10.required=false;variable10.readOnly=false;variable10.value=null;expression.setReturn(variable10);
 	variable11.hidden=false;variable11.required=false;variable11.readOnly=true;variable11.value="R-3 1 and 2 Unit Structure.";expression.setReturn(variable11);
 	variable12.hidden=true;variable12.required=false;variable12.readOnly=false;variable12.value=null;expression.setReturn(variable12);
@@ -151,7 +150,7 @@ if(variable0.value.equals("Residential Reroof")){
 	variable21.hidden=true;variable21.required=false;variable21.readOnly=false;variable21.value=null;expression.setReturn(variable21);
 	variable22.hidden=true;variable22.required=false;variable22.readOnly=false;variable22.value=null;expression.setReturn(variable22);
 	variable23.hidden=false;variable23.required=true;variable23.readOnly=false;expression.setReturn(variable23);
-	variable24.hidden=false;variable24.required=true;variable24.readOnly=false;expression.setReturn(variable24);
+	variable24.hidden=true;variable24.required=false;variable24.readOnly=false;variable24.value=null;expression.setReturn(variable24);
 	variable25.hidden=false;variable25.required=true;variable25.readOnly=false;expression.setReturn(variable25);
 	variable26.hidden=true;variable26.required=false;variable26.readOnly=false;variable26.value=null;expression.setReturn(variable26);
 	variable27.hidden=true;variable27.required=false;variable27.readOnly=false;variable27.value=null;expression.setReturn(variable27);
