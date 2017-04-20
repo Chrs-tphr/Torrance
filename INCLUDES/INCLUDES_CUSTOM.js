@@ -18,9 +18,11 @@
 |			: 03/23/2017 - Added validateWorkOrderAssetAndCosting() and getWorkOrderCostingTransactions() for validating on Status Update before.
 |			: 03/28/2017 - Updated sendSRContactNotificationEmail() to normalize template naming conventions, add support for passing additional template parameters
 |			: 04/08/2017 - Added disableBldBldSubTasks() and setExpirationDateForOnlineIssuance()
-|           : 04/10/2017 - Added getParkAssetStaffAssignment() - NVS
-|           : 04/11/2017 - Added createWorkOrderOnConditionAssessmentFail() - NVS
-|           : 04/11/2017 - Added setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress() - NVS
+|			: 04/10/2017 - Added getParkAssetStaffAssignment() - NVS
+|			: 04/11/2017 - Added createWorkOrderOnConditionAssessmentFail() - NVS
+|			: 04/11/2017 - Added setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress() - NVS
+|			: 04/20/2017 - Updated assignStaffDeptToCAP() to include call to getParkAssetStaffAssignment() - NVS
+|			: 04/20/2017 - Updated setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress() - NVS
 |
 /------------------------------------------------------------------------------------------------------*/
 
@@ -4247,11 +4249,13 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
 function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
     aa.print("Enter setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 
-    aa.print("assetCAScriptModel: " + assetCAScriptModel);
-    aa.print("assetScriptModel: " + assetScriptModel);
-    aa.print("refAddressModel: " + refAddressModel);
-    aa.print("workOrderCapId: " + workOrderCapId);
-    aa.print("description: " + description);
+    var objectMapper = new org.codehaus.jackson.map.ObjectMapper();
+
+    //aa.print("assetCAScriptModel: " + assetCAScriptModel);
+    //aa.print("assetScriptModel: " + assetScriptModel);
+    //aa.print("refAddressModel: " + refAddressModel);
+    //aa.print("workOrderCapId: " + workOrderCapId);
+    //aa.print("description: " + description);
 
     var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
 
@@ -4264,12 +4268,26 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
         aa.print("Begin calling aa.asset.createWorkOrderAsset()");
         aa.asset.createWorkOrderAsset(woAssetModel);
         aa.print("End calling aa.asset.createWorkOrderAsset()");
-        aa.print("Work order asset set");
-
+        
         aa.print("Begin calling updateWorkDesc()");
         updateWorkDesc(description, workOrderCapId); //INCLUDES_ACCELA_FUNCTIONS.js
         aa.print("End calling updateWorkDesc()");
-        aa.print("Work order description set");
+        
+        var assetCAWorkOrderModel = aa.proxyInvoker.newInstance("com.accela.ams.conditionassessment.AssetCAWorkOrderModel", null).getOutput();
+        assetCAWorkOrderModel.setServProvCode(assetCAScriptModel.getServiceProviderCode());
+        assetCAWorkOrderModel.setCapID(workOrderCapId);
+        assetCAWorkOrderModel.setCapID1(workOrderCapId.ID1);
+        assetCAWorkOrderModel.setCapID2(workOrderCapId.ID2);
+        assetCAWorkOrderModel.setCapID3(workOrderCapId.ID3);
+        assetCAWorkOrderModel.setAssetCAID(assetCAScriptModel.assetCAModel.assetCAID);
+        assetCAWorkOrderModel.setRecDate(assetCAScriptModel.getRecDate());
+        assetCAWorkOrderModel.setRecFulName(assetCAScriptModel.getRecFulName());
+        assetCAWorkOrderModel.setRecStatus(assetCAScriptModel.getRecStatus());
+        //aa.print(objectMapper.writeValueAsString(assetCAWorkOrderModel));
+
+        aa.print("Begin calling aa.assetCA.createAssetCAWorkOrder()");
+        aa.assetCA.createAssetCAWorkOrder(assetCAWorkOrderModel);
+        aa.print("End calling aa.assetCA.createAssetCAWorkOrder()");
 
         if (refAddressModel != null) {
 

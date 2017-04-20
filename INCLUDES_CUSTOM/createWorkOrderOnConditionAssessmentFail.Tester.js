@@ -21,7 +21,7 @@ function getScriptText(vScriptName) {
 
 eval(getScriptText("INCLUDES_ACCELA_FUNCTIONS"));
 eval(getScriptText("INCLUDES_ACCELA_GLOBALS"));
-eval(getScriptText("INCLUDES_CUSTOM"));
+//eval(getScriptText("INCLUDES_CUSTOM"));
 
 function logDebug(debugString) {
     aa.print(debugString);
@@ -40,7 +40,7 @@ createWorkOrderOnConditionAssessmentFail(assetCAID);
 
 function createWorkOrderOnConditionAssessmentFail(assetCAID) {
     aa.print("Enter createWorkOrderOnConditionAssessmentFail()");
-    
+
     //Create 1 WO for each CA with 1 or many failures 
     //Attach the asset from the CA to the WO
     //Populate the WO description with the attribute and values that qualify for a failure. 
@@ -56,9 +56,8 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
         var assetCAScriptModel = getAssetCAByPKScriptResult.getOutput();
         //aa.print("type: '" + type + "'");
         //aa.print("assetCAScriptModel:" + assetCAScriptModel);
-        //printObject(assetCAScriptModel, "");
         //aa.print(objectMapper.writeValueAsString(assetCAScriptModel));
-        
+
         var assetSeq = assetCAScriptModel.assetSeq;
         aa.print("assetSeq: " + assetSeq);
 
@@ -84,9 +83,9 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
 
         } else {
             aa.print("Error: " + getAssetDataScriptResult.getErrorType() + " " + getAssetDataScriptResult.getErrorMessage());
-        }        
+        }
 
-        var type = assetCAScriptModel.conditionAssessment;        
+        var type = assetCAScriptModel.conditionAssessment;
 
         // query CA attributes
         var attributes = {};
@@ -155,7 +154,7 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
         //}
 
         //aa.print("type='" + type + "'");        
-        
+
         if (type == "BI-ANNUAL FIRE HYDRANT INSPECT") {
 
             if (attributes.HydrantBuryCondition_Text == "Rusted" || attributes.HydrantBuryCondition_Text == "Too Low") {
@@ -193,7 +192,7 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
                 var description = "Valve Is Operable: " + attributes.ValveIsOperable;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Replace", "Water Valve Replace: " + assetCAScriptModel.assetID);
                 setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
-            } else if (attributes.ValveNutCondition == "Broken") {                
+            } else if (attributes.ValveNutCondition == "Broken") {
                 var description = "Valve Nut Condition: " + attributes.ValveNutCondition;
                 var woCapId = createCap("AMS/Water Operations/Water Valves/Repair", "Water Valve Repair: " + assetCAScriptModel.assetID);
                 setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, woCapId, description);
@@ -204,12 +203,14 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
             }
         }
     }
-    
+
     aa.print("Exit createWorkOrderOnConditionAssessmentFail()");
 }
 
 function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
     aa.print("Enter setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
+
+    var objectMapper = new org.codehaus.jackson.map.ObjectMapper();
 
     aa.print("assetCAScriptModel: " + assetCAScriptModel);
     aa.print("assetScriptModel: " + assetScriptModel);
@@ -226,7 +227,7 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
         woAssetModel.setCapID(workOrderCapId);
 
         aa.print("Begin calling aa.asset.createWorkOrderAsset()");
-        aa.asset.createWorkOrderAsset(woAssetModel);        
+        aa.asset.createWorkOrderAsset(woAssetModel);
         aa.print("End calling aa.asset.createWorkOrderAsset()");
         aa.print("Work order asset set");
 
@@ -234,6 +235,22 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
         updateWorkDesc(description, workOrderCapId); //INCLUDES_ACCELA_FUNCTIONS.js
         aa.print("End calling updateWorkDesc()");
         aa.print("Work order description set");
+
+        var assetCAWorkOrderModel = aa.proxyInvoker.newInstance("com.accela.ams.conditionassessment.AssetCAWorkOrderModel", null).getOutput();
+        assetCAWorkOrderModel.setServProvCode(assetCAScriptModel.getServiceProviderCode());
+        assetCAWorkOrderModel.setCapID(workOrderCapId);
+        assetCAWorkOrderModel.setCapID1(workOrderCapId.ID1);
+        assetCAWorkOrderModel.setCapID2(workOrderCapId.ID2);
+        assetCAWorkOrderModel.setCapID3(workOrderCapId.ID3);
+        assetCAWorkOrderModel.setAssetCAID(assetCAScriptModel.assetCAModel.assetCAID);
+        assetCAWorkOrderModel.setRecDate(assetCAScriptModel.getRecDate());
+        assetCAWorkOrderModel.setRecFulName(assetCAScriptModel.getRecFulName());
+        assetCAWorkOrderModel.setRecStatus(assetCAScriptModel.getRecStatus());
+        //aa.print(objectMapper.writeValueAsString(assetCAWorkOrderModel));
+
+        aa.print("Begin calling aa.assetCA.createAssetCAWorkOrder()");        
+        aa.assetCA.createAssetCAWorkOrder(assetCAWorkOrderModel);
+        aa.print("End calling aa.assetCA.createAssetCAWorkOrder()");
 
         if (refAddressModel != null) {
 
@@ -255,40 +272,40 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
     aa.print("Exit setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 }
 
-function printObject(item, tabs){
+function printObject(item, tabs) {
 
-	try{
-	
-		if(typeof(item.getClass) != "undefined"){
-			aa.print(item.getClass());
-		}
-	
-		tabs = tabs + "\t";
-		
-		var properties = [];
+    try {
 
-		for (property in item){
-			properties.push(property);	
-		}
-		
-		properties.sort();
-		
-		for(var i = 0; i < properties.length; i++){
-					    
-			var name = properties[i];
-			var property = item[name];
-			aa.print(tabs + name + ": " + typeof(property));
-			
-			//if(name !== "class" && typeof(property) == "object"){
-			//	printObject(property, tabs);
-			//}		
-		}
+        if (typeof (item.getClass) != "undefined") {
+            aa.print(item.getClass());
+        }
 
-		aa.print("\n");	
-		
-	}catch(exception){
-		aa.print(exception);		
-	}
+        tabs = tabs + "\t";
+
+        var properties = [];
+
+        for (property in item) {
+            properties.push(property);
+        }
+
+        properties.sort();
+
+        for (var i = 0; i < properties.length; i++) {
+
+            var name = properties[i];
+            var property = item[name];
+            aa.print(tabs + name + ": " + typeof (property));
+
+            //if(name !== "class" && typeof(property) == "object"){
+            //	printObject(property, tabs);
+            //}		
+        }
+
+        aa.print("\n");
+
+    } catch (exception) {
+        aa.print(exception);
+    }
 }
 
 aa.print("");

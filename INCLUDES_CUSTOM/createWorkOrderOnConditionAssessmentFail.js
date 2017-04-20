@@ -171,11 +171,13 @@ function createWorkOrderOnConditionAssessmentFail(assetCAID) {
 function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScriptModel, assetScriptModel, refAddressModel, workOrderCapId, description) {
     aa.print("Enter setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 
-    aa.print("assetCAScriptModel: " + assetCAScriptModel);
-    aa.print("assetScriptModel: " + assetScriptModel);
-    aa.print("refAddressModel: " + refAddressModel);
-    aa.print("workOrderCapId: " + workOrderCapId);
-    aa.print("description: " + description);
+    var objectMapper = new org.codehaus.jackson.map.ObjectMapper();
+
+    //aa.print("assetCAScriptModel: " + assetCAScriptModel);
+    //aa.print("assetScriptModel: " + assetScriptModel);
+    //aa.print("refAddressModel: " + refAddressModel);
+    //aa.print("workOrderCapId: " + workOrderCapId);
+    //aa.print("description: " + description);
 
     var woAssetModelRequest = aa.proxyInvoker.newInstance("com.accela.ams.workorder.WorkOrderAssetModel");
 
@@ -186,14 +188,28 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
         woAssetModel.setCapID(workOrderCapId);
 
         aa.print("Begin calling aa.asset.createWorkOrderAsset()");
-        aa.asset.createWorkOrderAsset(woAssetModel);        
+        aa.asset.createWorkOrderAsset(woAssetModel);
         aa.print("End calling aa.asset.createWorkOrderAsset()");
-        aa.print("Work order asset set");
-
+        
         aa.print("Begin calling updateWorkDesc()");
         updateWorkDesc(description, workOrderCapId); //INCLUDES_ACCELA_FUNCTIONS.js
         aa.print("End calling updateWorkDesc()");
-        aa.print("Work order description set");
+        
+        var assetCAWorkOrderModel = aa.proxyInvoker.newInstance("com.accela.ams.conditionassessment.AssetCAWorkOrderModel", null).getOutput();
+        assetCAWorkOrderModel.setServProvCode(assetCAScriptModel.getServiceProviderCode());
+        assetCAWorkOrderModel.setCapID(workOrderCapId);
+        assetCAWorkOrderModel.setCapID1(workOrderCapId.ID1);
+        assetCAWorkOrderModel.setCapID2(workOrderCapId.ID2);
+        assetCAWorkOrderModel.setCapID3(workOrderCapId.ID3);
+        assetCAWorkOrderModel.setAssetCAID(assetCAScriptModel.assetCAModel.assetCAID);
+        assetCAWorkOrderModel.setRecDate(assetCAScriptModel.getRecDate());
+        assetCAWorkOrderModel.setRecFulName(assetCAScriptModel.getRecFulName());
+        assetCAWorkOrderModel.setRecStatus(assetCAScriptModel.getRecStatus());
+        //aa.print(objectMapper.writeValueAsString(assetCAWorkOrderModel));
+
+        aa.print("Begin calling aa.assetCA.createAssetCAWorkOrder()");
+        aa.assetCA.createAssetCAWorkOrder(assetCAWorkOrderModel);
+        aa.print("End calling aa.assetCA.createAssetCAWorkOrder()");
 
         if (refAddressModel != null) {
 
