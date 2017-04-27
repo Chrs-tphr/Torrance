@@ -2,7 +2,7 @@
 | Program	: INCLUDES_CUSTOM.js
 | Event		: N/A
 | Agency	: Torrance
-| Version	: 04.08.2017.18:13.pst
+| Version	: 04.26.2017.22:37.pst
 |
 | Usage		: Custom Script Include.  Insert custom EMSE Function below and they will be available to all master scripts
 |
@@ -17,12 +17,13 @@
 |			: 01/12/2017 - Updated assignCapToDept() to set assigned to staff to null when the department is assigned.
 |			: 03/23/2017 - Added validateWorkOrderAssetAndCosting() and getWorkOrderCostingTransactions() for validating on Status Update before.
 |			: 03/28/2017 - Updated sendSRContactNotificationEmail() to normalize template naming conventions, add support for passing additional template parameters
-|			: 04/08/2017 - Added disableBldBldSubTasks() and setExpirationDateForOnlineIssuance()
+|			: 04/08/2017 - Added disableBldBldSubTasks()
 |			: 04/10/2017 - Added getParkAssetStaffAssignment() - NVS
 |			: 04/11/2017 - Added createWorkOrderOnConditionAssessmentFail() - NVS
 |			: 04/11/2017 - Added setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress() - NVS
 |			: 04/20/2017 - Updated assignStaffDeptToCAP() to include call to getParkAssetStaffAssignment() - NVS
 |			: 04/20/2017 - Updated setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress() - NVS
+|           : 04/26/2017 - Updated assignStaffDeptToCAP() to assign park SR's based on original requirements
 |
 /------------------------------------------------------------------------------------------------------*/
 
@@ -3450,42 +3451,7 @@ function assignStaffDeptToCAP(){
 				assignCapToStaff("COMMUNITYAFFAIRS");
 //			else gisLayerName = "Environmental Inspection Areas";
                         else assignCapToDept("Environmental Office", capId);
-		} else if (appMatch("ServiceRequest/Park Condition/NA/NA") || appMatch("AMS/Parks/*/*")) {
-
-		    //****************************************************************
-		    //  Removed 2017-04-10 by N.Victor Staggs, Woolpert Inc.
-		    //****************************************************************
-
-		    //gisLayerName = "Park Assignment Areas";
-		    //// check that GIS objects are attached
-		    //var gisResult = aa.gis.getCapGISObjects(capId);
-		    //if (gisResult.getSuccess()){
-		    //	var gisObjs = gisResult.getOutput();
-		    //	if (!gisObjs || gisObjs.length == 0){
-		    //		// attach asset GIS object
-		    //		var assetGISResult = aa.gis.getAssetGISObject(capId);
-		    //		if (assetGISResult.getSuccess()){
-		    //			var assetGISObj = assetGISResult.getOutput()[0];
-		    //			var serviceId = assetGISObj.getGisServiceId();
-		    //			var typeId = assetGISObj.getGisTypeId();
-		    //			var gisId = assetGISObj.getGISObjects()[0].getGisId();
-		    //			logDebug("Asset GIS found.");
-		    //			logDebug("Service: " + serviceId);
-		    //			logDebug("Type: " + typeId);
-		    //			logDebug("GISID: " + gisId);
-		    //			aa.gis.addCapGISObject(capId, serviceId, typeId, gisId, true);
-		    //		} else
-		    //			logDebug("Asset GIS not found.");
-		    //	}
-
-		    //} else {
-		    //	logDebug("Unable to verify asset GIS object attached.");
-		    //}
-
-		    //****************************************************************
-		    //  Added 2017-04-10 by N.Victor Staggs, Woolpert Inc.
-		    //****************************************************************
-
+		} else if (appMatch("AMS/Parks/*/*")) {
 		    if(
                 (appMatch("AMS/Parks/Park/Mowing") == false)
                     &&
@@ -3988,12 +3954,6 @@ function disableBldBldSubTasks(){
 	setTask("Waste Management Final","N","N","BLD_BLD_SUB");
 }
 
-function setExpirationDateForOnlineIssuance(){
-	if(AInfo("Permit Scope") != null && AInfo("Permit Scope") != "" && balanceDue <= 0){
-		editAppSpecific("Expiration Date", dateAdd(null,0));
-	}
-}
-
 function getParkAssetStaffAssignment(permitId1, permitId2, permitId3) {
     aa.print("Enter getParkAssetStaffAssignment()");
 
@@ -4308,3 +4268,4 @@ function setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress(assetCAScr
 
     aa.print("Exit setConditionAssessmentWorkOrderAssetAndDescriptionAndAddress()");
 }
+
