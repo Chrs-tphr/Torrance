@@ -1,4 +1,4 @@
-function bldReroofValuation(){
+function bldResReroofValuation(){
 	var reroofValuation;
 	if(AInfo["Roofing Squares"] == "25 Squares and Under"){
 		reroofValuation = 2900;
