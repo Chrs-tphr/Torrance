@@ -7,7 +7,7 @@
 | Notes   : Building ALL ACA
 /------------------------------------------------------------------------------------------------------*/
 
-var isConValid = true;
+var isConValid = false;
 var conHasCCode;
 var bLResults = "";
 var msg = "";
@@ -28,6 +28,28 @@ function getScriptText(vScriptName){
 	var emseScript = emseBiz.getScriptByPK(aa.getServiceProviderCode(),vScriptName,"ADMIN");
 	return emseScript.getScriptText() + "";
 }
+
+//message formatting
+var msgStyle = "<style>.validMsg, .nValidMsg {	\
+	margin: 10px 0px; \
+	padding:12px;	\
+}	\
+.validMsg {	\
+	color: #4F8A10;	\
+	background-color: #DFF2BF;	\
+}	\
+.nValidMsg {	\
+	color: #D8000C;	\
+	background-color: #FFBABA;	\
+}	\
+.validMsg i, .nValidMsg i {	\
+	margin:10px 22px;	\
+	font-size:2em;	\
+	vertical-align:middle;	\
+}</style>";
+
+// add message style
+msg=msgStyle;
 
 //check cap type
 var thisCapType=expression.getValue("CAP::capType").value;
@@ -53,6 +75,10 @@ if(thisCapTypeArray[0] == "Building"){
 		runEB = true;
 	}
 }
+var reqCCodeMsg = "";
+for(n=0; n < reqCCode.length; n++){
+	n == 0 ? reqCCodeMsg += reqCCode[n] : reqCCodeMsg += " or "+reqCCode[n];
+}
 
 if(runEB){
 	// License Number that the user entered or selected
@@ -70,13 +96,12 @@ if(runEB){
 			var contractorLic = aa.expiration.getLicensesByCapID(licenseCapIdModel).getOutput();
 			var bLExpStatus = contractorLic.getExpStatus();
 			if(bLExpStatus == "Active" || bLExpStatus == "About to Expire"){
-				msg += "City of Torrance Business License is "+bLExpStatus+". ";
 				var bLExpDate = contractorLic.getExpDate();
 				if(bLExpDate){
 					var b1ExpDate = bLExpDate.getMonth() + "/" + bLExpDate.getDayOfMonth() + "/" + bLExpDate.getYear();
 					var today = new Date();
 					if(new Date(b1ExpDate) > today){
-						msg += "Expiring: "+b1ExpDate+". ";
+						isConValid = true;
 
 						//if ACA check Class Code
 						conHasCCode = false;
@@ -91,46 +116,47 @@ if(runEB){
 								if(matches(peopAttrArray[i].getAttributeName(),"CLASS CODE 1","CLASS CODE 2","CLASS CODE 3","CLASS CODE 4")){
 									var lpClassCode = peopAttrArray[i].getAttributeValue();
 									if(exists(lpClassCode,reqCCode)){
-										msg += "Contractor has required Class Code "+reqCCode+". ";
 										conHasCCode = true;
 										break;
 									}
 								}
 							}
 						}
-
-					}else{
-						msg += "But Expired: "+b1ExpDate+". ";
-						isConValid = false;
 					}
-				}else{
-					isConValid = false;
 				}
-			}else{
-				isConValid = false;
-				msg += "City of Torrance Business License is "+bLExpStatus+". ";
 			}
-		}else{
-			isConValid = false;
-			msg += "Contractor does not have a business license number on file. ";
 		}
-	}else{
-		isConValid = false;
-		msg += "Contractor does NOT have a City of Torrance Business License. ";
 	}
-
-	//update for Class Code Requirements
-	if(conHasCCode == false){
-		msg += "Contractor does not have the required Classification: "+reqCCode+". "
-		isConValid = false;
+	
+	//contractor is valid
+	if(isConValid && conHasCCode){
+		msg += "<div class=\"validMsg\">The selected Contractor has a valid City of Torrance Business license and the required Classification Codes "+reqCCodeMsg+"</div>";
+		variable0.message=msg;
+		expression.setReturn(variable0);
 	}
-
-	//display message
-	variable0.message=msg;
-	expression.setReturn(variable0);
 
 	//block submit
-	if(!isConValid){
+	if(isConValid && !conHasCCode){
+		msg += "<div class=\"nValidMsg\"><span style=\"color:#4F8A10\">The selected Contractor has a valid City of Torrance Business license</span> but does not have the required Classification Codes "+reqCCodeMsg+"</div>";
+		variable0.message=msg;
+		expression.setReturn(variable0);
+		
+		variable1.blockSubmit=true;
+		expression.setReturn(variable1);
+	}
+	if(!isConValid && conHasCCode){
+		msg += "<div class=\"nValidMsg\"><span style=\"color:#4F8A10\">The selected Contractor has the required Classification Codes "+reqCCodeMsg+",</span> but does not have a valid City of Torrance Business license. </div>";
+		variable0.message=msg;
+		expression.setReturn(variable0);
+		
+		variable1.blockSubmit=true;
+		expression.setReturn(variable1);
+	}
+	if(!isConValid && !conHasCCode){
+		msg += "<div class=\"nValidMsg\">The selected Contractor does not have a valid City of Torrance Business license and the required Classification Codes "+reqCCodeMsg+"</div>";
+		variable0.message=msg;
+		expression.setReturn(variable0);
+		
 		variable1.blockSubmit=true;
 		expression.setReturn(variable1);
 	}
