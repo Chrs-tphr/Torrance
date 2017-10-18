@@ -11,12 +11,14 @@
 |           and/or LP::professionalModel:licensenbr for best results.   
 |
 | 11/21/2012 : 1.1 : Dane Quatacker, Accela - Updated to use HTTP GET for retrieving data from CSLB
+| 10/17/2017 : 1.2 : Chrstphr Gdwn, Woolpert - Updated to display message when license number is not valid in ACA
 |
 /------------------------------------------------------------------------------------------------------*/
 
-
+var noCslb = false;
 var msg = "";
 var servProvCode=expression.getValue("$$servProvCode$$").value;
+var licNumField = expression.getValue("LP::professionalModel*licensenbr");
 var returnMessage = "";
 // get the EMSE biz object
 var aa = expression.getScriptRoot();
@@ -57,6 +59,8 @@ if (isError){
 else if (errorNode)
 	{
 	expression.addMessage("CSLB information returned an error for license " + licNum + " : " + unescape(errorNode.getText()).replace(/\+/g," "));
+	
+	noCslb = true;
 	}
 else
 	{
@@ -107,3 +111,26 @@ else
 	if (returnMessage.length > 0)
 		expression.addMessage("CSLB report status: " + returnMessage);
 	}
+
+if(noCslb){
+	//message formatting
+	var msgStyle = "<style>.noCSLB {	\
+		margin: 10px 0px; \
+		padding:12px;	\
+		color: #D8000C;	\
+		background-color: #FFBABA;	\
+	}	\
+	.noCSLB i {	\
+		margin:10px 22px;	\
+		font-size:2em;	\
+		vertical-align:middle;	\
+	}</style>";
+	msg+=msgStyle;
+	
+	msg+="<div class=\"noCSLB\">The license number entered is not a valid California State Contractor License Number. </div>";
+	licNumField.message=msg;
+	expression.setReturn(licNumField);
+}else{
+	licNumField.message=msg;
+	expression.setReturn(licNumField);
+}
