@@ -114,7 +114,7 @@ if(runEB){
 							var peopAttrArray = peopAttrResult.getOutput();
 							for(i in peopAttrArray){
 								if(matches(peopAttrArray[i].getAttributeName(),"CLASS CODE 1","CLASS CODE 2","CLASS CODE 3","CLASS CODE 4")){
-									var lpClassCode = peopAttrArray[i].getAttributeValue();
+									var lpClassCode = peopAttrArray[i].getAttributeValue();//.replace("-","");
 									if(exists(lpClassCode,reqCCode)){
 										conHasCCode = true;
 										break;
